@@ -9,6 +9,14 @@ Author: Evolua
 // Bloquear acesso direto
 if (! defined('ABSPATH')) exit;
 
+if (! defined('EVOLUA_PLUGIN_PATH')) {
+	define('EVOLUA_PLUGIN_PATH', plugin_dir_path(__FILE__));
+}
+
+if (! defined('EVOLUA_PLUGIN_URL')) {
+	define('EVOLUA_PLUGIN_URL', plugin_dir_url(__FILE__));
+}
+
 add_action('wp_footer', function () {
 ?>
 	<script>
@@ -319,153 +327,143 @@ add_shortcode('faq_sanfona', 'faq_sanfona_shortcode');
 
 function faq_search_result_shortcode()
 {
-	$args = [
-		'post_type'      => 'faq',
-		'posts_per_page' => -1,
-	];
+	$terms = get_terms([
+		'taxonomy'   => 'categoria_faq',
+		'hide_empty' => true,
+		'orderby'    => 'name',
+		'order'      => 'ASC'
+	]);
 
-	$faq_query = new WP_Query($args);
-	$faq_items = [];
-
-	if ($faq_query->have_posts()) {
-		while ($faq_query->have_posts()) {
-			$faq_query->the_post();
-			$faq_items[] = [
-				'id'    => get_the_ID(),
-				'title' => wp_strip_all_tags(get_the_title()),
-				'url'   => get_permalink(),
-			];
-		}
+	if (empty($terms) || is_wp_error($terms)) {
+		return '';
 	}
 
-	wp_reset_postdata();
-
-	$wrapper_id = wp_unique_id('faq-search-wrapper-');
-	$input_id = $wrapper_id . '-input';
-	$results_id = $wrapper_id . '-results';
-
 	ob_start();
+
+	$search_term = isset($_GET['faq_search'])
+		? sanitize_text_field($_GET['faq_search'])
+		: '';
+
+	if (empty($search_term)) {
+		return;
+	}
 ?>
-	<div id="<?php echo esc_attr($wrapper_id); ?>" class="faq-search-shortcode">
-		<input
-			id="<?php echo esc_attr($input_id); ?>"
-			type="search"
-			name="faq_search"
-			placeholder="Buscar no FAQ"
-			autocomplete="off" />
 
-		<div id="<?php echo esc_attr($results_id); ?>" class="faq-search-results" hidden></div>
+	<div class="faq-wrapper faq-wrapper-search">
+		<h2 class="faq-search-title">Exibindo resultados para <span>"<?php echo esc_html($search_term); ?>"</span></h2>
+
+		<?php foreach ($terms as $term) : ?>
+			<div class="faq-categoria-item <?php echo 'categoria-' . $term->slug; ?>" id="<?php echo 'categoria-' . $term->slug; ?>" data-category="<?php echo $term->term_id; ?>">
+
+				<?php
+
+
+				$args = [
+					'post_type'      => 'faq',
+					'posts_per_page' => -1,
+					'tax_query' => [
+						[
+							'taxonomy' => 'categoria_faq',
+							'field'    => 'term_id',
+							'terms'    => $term->term_id,
+						],
+					],
+				];
+
+				if (!empty($search_term)) {
+					$args['s'] = $search_term;
+				}
+
+				$faq_query = new WP_Query($args);
+
+				if ($faq_query->have_posts()) :
+
+					$faqs_par   = [];
+					$faqs_impar = [];
+					$i = 0;
+
+					while ($faq_query->have_posts()) :
+						$faq_query->the_post();
+
+						if ($i % 2 === 0) {
+							$faqs_par[] = get_the_ID();
+						} else {
+							$faqs_impar[] = get_the_ID();
+						}
+
+						$i++;
+					endwhile;
+				?>
+					<h2 class="faq-categoria">
+						<?php echo esc_html($term->name); ?>
+					</h2>
+
+					<div class="faq-cols faq-accordion">
+
+						<!-- COLUNA 1 -->
+						<div class="faq-col">
+
+							<?php foreach ($faqs_par as $post_id) :
+								$post = get_post($post_id);
+								setup_postdata($post); ?>
+
+								<div class="faq-item">
+
+									<div class="faq-question">
+										<?php esc_html_e($post->post_title); ?>
+									</div>
+
+									<div class="faq-answer">
+										<?php the_content(); ?>
+									</div>
+
+								</div>
+
+							<?php endforeach; ?>
+
+						</div>
+
+						<!-- COLUNA 2 -->
+						<div class="faq-col">
+
+							<?php foreach ($faqs_impar as $post_id) :
+								$post = get_post($post_id);
+								setup_postdata($post); ?>
+
+								<div class="faq-item">
+
+									<div class="faq-question">
+										<?php esc_html_e($post->post_title); ?>
+									</div>
+
+									<div class="faq-answer">
+										<?php the_content(); ?>
+									</div>
+
+								</div>
+
+							<?php endforeach; ?>
+
+						</div>
+
+					</div>
+
+				<?php
+					wp_reset_postdata();
+				endif;
+				?>
+			</div>
+
+		<?php endforeach; ?>
+
 	</div>
-
-	<style>
-		#<?php echo esc_attr($wrapper_id); ?> input[name="faq_search"] {
-			width: 100%;
-			padding: 10px 12px;
-			border: 1px solid #ccc;
-		}
-
-		#<?php echo esc_attr($wrapper_id); ?> .faq-search-results {
-			margin-top: 8px;
-			border: 1px solid #ddd;
-			background: #fff;
-		}
-
-		#<?php echo esc_attr($wrapper_id); ?> .faq-search-result-item {
-			display: block;
-			padding: 10px 12px;
-			border-top: 1px solid #eee;
-			color: inherit;
-			text-decoration: none;
-		}
-
-		#<?php echo esc_attr($wrapper_id); ?> .faq-search-result-item:first-child {
-			border-top: 0;
-		}
-
-		#<?php echo esc_attr($wrapper_id); ?> .faq-search-result-empty {
-			padding: 10px 12px;
-			color: #666;
-		}
-	</style>
-
-	<script>
-		(function() {
-			const data = <?php echo wp_json_encode($faq_items, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
-			const input = document.getElementById('<?php echo esc_js($input_id); ?>');
-			const results = document.getElementById('<?php echo esc_js($results_id); ?>');
-			const wrapper = document.getElementById('<?php echo esc_js($wrapper_id); ?>');
-
-			if (!input || !results || !wrapper || !Array.isArray(data)) return;
-
-			let timer;
-
-			function hideResults() {
-				results.innerHTML = '';
-				results.hidden = true;
-			}
-
-			function showEmpty() {
-				results.innerHTML = '';
-				const empty = document.createElement('div');
-				empty.className = 'faq-search-result-empty';
-				empty.textContent = 'Nenhum resultado';
-				results.appendChild(empty);
-				results.hidden = false;
-			}
-
-			function showItems(items) {
-				results.innerHTML = '';
-
-				items.forEach(function(item) {
-					const link = document.createElement('a');
-					link.className = 'faq-search-result-item';
-					link.href = item.url;
-					link.textContent = item.title;
-					results.appendChild(link);
-				});
-
-				results.hidden = false;
-			}
-
-			function onSearchInput() {
-				const term = input.value.trim().toLowerCase();
-
-				if (term.length < 2) {
-					hideResults();
-					return;
-				}
-
-				const matched = data
-					.filter(function(item) {
-						return typeof item.title === 'string' && item.title.toLowerCase().includes(term);
-					})
-					.slice(0, 8);
-
-				if (!matched.length) {
-					showEmpty();
-					return;
-				}
-
-				showItems(matched);
-			}
-
-			input.addEventListener('input', function() {
-				clearTimeout(timer);
-				timer = setTimeout(onSearchInput, 200);
-			});
-
-			document.addEventListener('click', function(e) {
-				if (wrapper.contains(e.target)) return;
-				hideResults();
-			});
-		})();
-	</script>
 
 <?php
 	return ob_get_clean();
 }
 
 add_shortcode('faq_search_result', 'faq_search_result_shortcode');
+require_once EVOLUA_PLUGIN_PATH . 'template-parts/faq-search-live-shortcode.php';
 
 
 function my_cptui_add_post_type_to_search($query)
