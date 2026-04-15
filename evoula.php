@@ -469,6 +469,7 @@ add_shortcode('faq_search_result', 'faq_search_result_shortcode');
 require_once EVOLUA_PLUGIN_PATH . 'template-parts/faq-search-live-shortcode.php';
 require_once EVOLUA_PLUGIN_PATH . 'template-parts/post-search-live-shortcode.php';
 require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-categories-section.php';
+require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-related-articles.php';
 
 
 function my_cptui_add_post_type_to_search($query)
