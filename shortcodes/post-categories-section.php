@@ -69,6 +69,21 @@ function evolua_post_categories_section_get_term_icon($term)
 	);
 }
 
+function evolua_post_categories_section_is_uncategorized($term)
+{
+	if (! $term instanceof WP_Term) {
+		return false;
+	}
+
+	$default_category = (int) get_option('default_category');
+
+	if ($default_category > 0 && (int) $term->term_id === $default_category) {
+		return true;
+	}
+
+	return $term->slug === 'sem-categoria' || $term->slug === 'uncategorized';
+}
+
 function evolua_post_categories_section_render_cards(WP_Query $post_query)
 {
 	ob_start();
@@ -125,6 +140,12 @@ function evolua_post_categories_section_shortcode()
 		'order'      => 'ASC',
 	]);
 
+	if (! empty($terms) && ! is_wp_error($terms)) {
+		$terms = array_values(array_filter($terms, function ($term) {
+			return ! evolua_post_categories_section_is_uncategorized($term);
+		}));
+	}
+
 	$initial_query = new WP_Query(evolua_post_categories_section_query_args(0, 1));
 	$initial_html = evolua_post_categories_section_render_cards($initial_query);
 	$has_more = 1 < (int) $initial_query->max_num_pages;
@@ -145,6 +166,7 @@ function evolua_post_categories_section_shortcode()
 			<?php if (! empty($terms) && ! is_wp_error($terms)) : ?>
 				<?php foreach ($terms as $term) : ?>
 					<button class="evolua-posts-section__filter" type="button" data-category="<?php echo esc_attr($term->term_id); ?>">
+						<?php echo evolua_post_categories_section_get_term_icon($term); ?>
 						<?php echo esc_html($term->name); ?>
 					</button>
 				<?php endforeach; ?>

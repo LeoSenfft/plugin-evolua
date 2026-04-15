@@ -12,13 +12,17 @@
 
 .evolua-posts-section__filter {
   appearance: none;
+  align-items: center;
   border: 1px solid var(--e-global-color-accent);
-  border-radius: 8px;
-  background: #ffffff;
-  color: var(--e-global-color-accent);
+  border-radius: 100vw;
+  background: #ffffff !important;
+  color: var(--e-global-color-accent) !important;
   cursor: pointer;
-  font-size: 14px;
+  display: inline-flex;
+  gap: 6px;
+  font-size: 16px;
   font-weight: 600;
+  justify-content: center;
   line-height: 1;
   min-height: 32px;
   padding: 8px 18px;
@@ -29,8 +33,22 @@
 
 .evolua-posts-section__filter:hover,
 .evolua-posts-section__filter.is-active {
-  background: var(--e-global-color-accent);
-  color: #ffffff;
+  background: var(--e-global-color-accent) !important;
+  color: #ffffff !important;
+}
+
+.evolua-posts-section__filter .evolua-post-category-icon,
+.evolua-posts-section__filter img,
+.evolua-posts-section__filter svg {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.evolua-posts-section__filter svg,
+.evolua-posts-section__filter svg * {
+  fill: currentColor;
 }
 
 .evolua-posts-section__grid {
@@ -202,7 +220,7 @@
   min-height: 36px;
   padding: 10px 22px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 100vw;
   background: var(--e-global-color-accent);
   color: #ffffff;
   cursor: pointer;
