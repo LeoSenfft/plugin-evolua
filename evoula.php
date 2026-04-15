@@ -198,6 +198,7 @@ function meu_plugin_faq_list_shortcode()
 }
 add_shortcode('faq_list', 'meu_plugin_faq_list_shortcode');
 require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-categories.php';
+require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-breadcrumb.php';
 
 
 function faq_sanfona_shortcode()
@@ -466,6 +467,7 @@ function faq_search_result_shortcode()
 add_shortcode('faq_search_result', 'faq_search_result_shortcode');
 require_once EVOLUA_PLUGIN_PATH . 'template-parts/faq-search-live-shortcode.php';
 require_once EVOLUA_PLUGIN_PATH . 'template-parts/post-search-live-shortcode.php';
+require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-categories-section.php';
 
 
 function my_cptui_add_post_type_to_search($query)
