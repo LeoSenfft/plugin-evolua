@@ -1,0 +1,56 @@
+.evolua-post-author-meta-card {
+  align-items: center;
+  background: #ffffff;
+  border-radius: 100vw;
+  display: flex;
+  gap: 10px;
+  width: fit-content;
+}
+
+.evolua-post-author-meta-avatar-wrap {
+  align-items: center;
+  background: var(--e-global-color-accent);
+  border-radius: 100%;
+  display: flex;
+  flex: 0 0 46px;
+  height: 46px;
+  justify-content: center;
+  margin-left: 0;
+  overflow: hidden;
+  width: 46px;
+}
+
+.elementor img.evolua-post-author-meta-avatar {
+  border-radius: 100%;
+  display: block;
+  height: 40px;
+  object-fit: cover;
+  width: 40px;
+}
+
+.evolua-post-author-meta-content {
+  min-width: 0;
+  padding: 7px;
+  padding-left: 0;
+  padding-right: 26px;
+}
+
+.evolua-post-author-meta-name {
+  color: var(--e-global-color-accent);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.12;
+}
+
+.evolua-post-author-meta-prefix,
+.evolua-post-author-meta-author {
+  display: inline;
+}
+
+.evolua-post-author-meta-role {
+  color: var(--e-global-color-487e4dc);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.2;
+  margin-top: 4px;
+}
