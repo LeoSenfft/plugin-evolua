@@ -9,6 +9,18 @@ $primary_category = isset($primary_category) && $primary_category instanceof WP_
 $categories = isset($categories) && is_array($categories) ? $categories : [];
 $category_icon = isset($category_icon) ? $category_icon : '';
 $excerpt = isset($excerpt) ? $excerpt : get_the_excerpt($post_id);
+
+$categories = array_values(array_filter($categories, function ($category) {
+	if (! $category instanceof WP_Term) {
+		return false;
+	}
+
+	if (function_exists('evolua_post_categories_section_is_uncategorized')) {
+		return ! evolua_post_categories_section_is_uncategorized($category);
+	}
+
+	return $category->slug !== 'sem-categoria' && $category->slug !== 'uncategorized';
+}));
 ?>
 
 <article class="evolua-post-card">
