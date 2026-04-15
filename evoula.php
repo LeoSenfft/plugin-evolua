@@ -197,6 +197,7 @@ function meu_plugin_faq_list_shortcode()
 	return ob_get_clean();
 }
 add_shortcode('faq_list', 'meu_plugin_faq_list_shortcode');
+require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-categories.php';
 
 
 function faq_sanfona_shortcode()
