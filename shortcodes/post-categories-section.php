@@ -177,11 +177,6 @@ function evolua_post_categories_section_shortcode()
 			<?php echo $initial_html; ?>
 		</div>
 
-		<div class="evolua-posts-section__loader" aria-live="polite" hidden>
-			<span class="evolua-posts-section__spinner" aria-hidden="true"></span>
-			<span>Carregando posts...</span>
-		</div>
-
 		<p id="<?php echo esc_attr($empty_id); ?>" class="evolua-posts-section__empty" <?php echo $initial_html ? 'hidden' : ''; ?>>
 			Nenhum post encontrado.
 		</p>
@@ -199,21 +194,20 @@ function evolua_post_categories_section_shortcode()
 			const grid = document.getElementById('<?php echo esc_js($grid_id); ?>');
 			const empty = document.getElementById('<?php echo esc_js($empty_id); ?>');
 			const loadMore = wrapper ? wrapper.querySelector('.evolua-posts-section__load-more') : null;
-			const loader = wrapper ? wrapper.querySelector('.evolua-posts-section__loader') : null;
 			const filters = wrapper ? wrapper.querySelectorAll('.evolua-posts-section__filter') : [];
 			const ajaxUrl = '<?php echo esc_js($ajax_url); ?>';
 			const nonce = '<?php echo esc_js($nonce); ?>';
 
-			if (!wrapper || !grid || !empty || !loadMore || !loader) return;
+			if (!wrapper || !grid || !empty || !loadMore) return;
 
 			let category = 0;
 			let nextPage = 2;
 			let loading = false;
 
-			function setLoading(isLoading) {
+			function setLoading(isLoading, mode) {
 				loading = isLoading;
 				wrapper.classList.toggle('is-loading', isLoading);
-				loader.hidden = !isLoading;
+				wrapper.classList.toggle('is-replacing', isLoading && mode === 'replace');
 				loadMore.disabled = isLoading;
 				loadMore.textContent = isLoading ? 'Carregando...' : 'Ver mais';
 			}
@@ -225,7 +219,7 @@ function evolua_post_categories_section_shortcode()
 			function requestPosts(requestedCategory, page, mode) {
 				if (loading) return;
 
-				setLoading(true);
+				setLoading(true, mode);
 
 				const body = new URLSearchParams();
 				body.append('action', 'evolua_post_categories_section_load_more');
@@ -266,7 +260,7 @@ function evolua_post_categories_section_shortcode()
 						}
 					})
 					.finally(function() {
-						setLoading(false);
+						setLoading(false, mode);
 					});
 			}
 
