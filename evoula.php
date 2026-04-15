@@ -198,6 +198,7 @@ function meu_plugin_faq_list_shortcode()
 }
 add_shortcode('faq_list', 'meu_plugin_faq_list_shortcode');
 require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-categories.php';
+require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-category-icon.php';
 require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-breadcrumb.php';
 require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-author-meta.php';
 
