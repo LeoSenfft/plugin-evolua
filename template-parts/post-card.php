@@ -39,10 +39,10 @@ $excerpt = isset($excerpt) ? $excerpt : get_the_excerpt($post_id);
 						? evolua_post_categories_section_get_term_icon($category)
 						: '';
 					?>
-					<a class="evolua-post-card__category" href="<?php echo esc_url($category_link); ?>">
+					<div class="evolua-post-card__category">
 						<?php echo $current_category_icon; ?>
 						<span><?php echo esc_html($category->name); ?></span>
-					</a>
+					</div>
 				<?php endforeach; ?>
 			</div>
 		<?php endif; ?>

@@ -12,22 +12,24 @@
 
 .evolua-posts-section__filter {
   appearance: none;
-  border: 1px solid #ff6432;
+  border: 1px solid var(--e-global-color-accent);
   border-radius: 8px;
   background: #ffffff;
-  color: #ff6432;
+  color: var(--e-global-color-accent);
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
   line-height: 1;
   min-height: 32px;
   padding: 8px 18px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .evolua-posts-section__filter:hover,
 .evolua-posts-section__filter.is-active {
-  background: #ff6432;
+  background: var(--e-global-color-accent);
   color: #ffffff;
 }
 
@@ -66,9 +68,7 @@
 .evolua-post-card__placeholder {
   width: 100%;
   height: 100%;
-  background:
-    linear-gradient(135deg, rgba(255, 100, 50, 0.16), rgba(83, 158, 117, 0.18)),
-    #eef3ef;
+  background: linear-gradient(135deg, rgba(255, 100, 50, 0.16), rgba(83, 158, 117, 0.18)), #eef3ef;
 }
 
 .evolua-post-card__body {
@@ -92,38 +92,28 @@
   gap: 5px;
   max-width: 100%;
   min-height: 22px;
-  padding: 4px 9px;
-  border: 1px solid #ff6432;
-  border-radius: 8px;
-  color: #ff6432;
+  padding: 4px 16px;
+  border: 1px solid var(--e-global-color-accent);
+  border-radius: 100vw;
+  color: var(--e-global-color-accent);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
   text-decoration: none;
-}
-
-.evolua-post-card__category:hover {
-  background: #ff6432;
-  color: #ffffff;
 }
 
 .evolua-post-card__category .evolua-post-category-icon,
 .evolua-post-card__category img,
 .evolua-post-card__category svg {
   flex: 0 0 auto;
-  width: 12px;
-  height: 12px;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
-}
-
-.evolua-post-card__category svg,
-.evolua-post-card__category svg * {
-  fill: currentColor;
 }
 
 .evolua-post-card__title {
   margin: 0 0 8px;
-  font-size: 17px;
+  font-size: 16px !important;
   font-weight: 700;
   line-height: 1.25;
 }
@@ -134,7 +124,7 @@
 }
 
 .evolua-post-card__title a:hover {
-  color: #ff6432;
+  color: var(--e-global-color-accent);
 }
 
 .evolua-post-card__excerpt {
@@ -146,15 +136,11 @@
 
 .evolua-post-card__read-more {
   margin-top: auto;
-  color: #ff6432;
-  font-size: 14px;
-  font-weight: 700;
+  color: var(--e-global-color-accent) !important;
+  font-size: 16px;
+  font-weight: 500;
   line-height: 1;
-  text-decoration: none;
-}
-
-.evolua-post-card__read-more:hover {
-  text-decoration: underline;
+  text-decoration: underline !important;
 }
 
 .evolua-posts-section__loader {
@@ -163,7 +149,7 @@
   justify-content: center;
   gap: 10px;
   margin: 24px 0 0;
-  color: #ff6432;
+  color: var(--e-global-color-accent);
   font-size: 14px;
   font-weight: 700;
 }
@@ -176,7 +162,7 @@
   width: 18px;
   height: 18px;
   border: 2px solid rgba(255, 100, 50, 0.25);
-  border-top-color: #ff6432;
+  border-top-color: var(--e-global-color-accent);
   border-radius: 50%;
   animation: evolua-posts-section-spin 0.8s linear infinite;
 }
@@ -209,7 +195,7 @@
   padding: 10px 22px;
   border: 0;
   border-radius: 8px;
-  background: #ff6432;
+  background: var(--e-global-color-accent);
   color: #ffffff;
   cursor: pointer;
   font-size: 14px;
