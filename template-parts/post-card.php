@@ -53,6 +53,10 @@ $excerpt = isset($excerpt) ? $excerpt : get_the_excerpt($post_id);
 			</a>
 		</h3>
 
+		<time class="evolua-post-card__date" datetime="<?php echo esc_attr(get_the_date('c', $post_id)); ?>">
+			<?php echo esc_html(get_the_date('d/m/Y', $post_id)); ?>
+		</time>
+
 		<?php if (! empty($excerpt)) : ?>
 			<p class="evolua-post-card__excerpt">
 				<?php echo esc_html(wp_trim_words(wp_strip_all_tags($excerpt), 18, '...')); ?>
