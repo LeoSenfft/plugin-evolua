@@ -26,16 +26,7 @@ function evolua_post_author_meta_shortcode($atts = [])
 		return '';
 	}
 
-	$css_file = EVOLUA_PLUGIN_PATH . 'assets/css/post-author-meta.css';
-	$css_url = EVOLUA_PLUGIN_URL . 'assets/css/post-author-meta.css';
-
-	wp_register_style(
-		'evolua-post-author-meta',
-		$css_url,
-		[],
-		file_exists($css_file) ? filemtime($css_file) : null
-	);
-	wp_enqueue_style('evolua-post-author-meta');
+	evolua_enqueue_post_author_meta_style();
 
 	$author_name = get_the_author_meta('display_name', $author_id);
 	$author_role = evolua_get_post_author_role($author_id, $atts['role_meta_key'], $atts['default_role']);
@@ -76,6 +67,42 @@ function evolua_post_author_meta_shortcode($atts = [])
 	return ob_get_clean();
 }
 add_shortcode('post_author_meta', 'evolua_post_author_meta_shortcode');
+
+function evolua_enqueue_post_author_meta_style()
+{
+	$css_file = EVOLUA_PLUGIN_PATH . 'assets/css/post-author-meta.css';
+	$css_url = EVOLUA_PLUGIN_URL . 'assets/css/post-author-meta.css';
+
+	if (! wp_style_is('evolua-post-author-meta', 'registered')) {
+		wp_register_style(
+			'evolua-post-author-meta',
+			$css_url,
+			[],
+			file_exists($css_file) ? filemtime($css_file) : null
+		);
+	}
+
+	wp_enqueue_style('evolua-post-author-meta');
+}
+
+function evolua_enqueue_post_author_meta_style_in_elementor()
+{
+	if (! class_exists('\Elementor\Plugin')) {
+		return;
+	}
+
+	$elementor = \Elementor\Plugin::$instance;
+	$is_preview = isset($elementor->preview) && $elementor->preview->is_preview_mode();
+	$is_edit_mode = isset($elementor->editor) && $elementor->editor->is_edit_mode();
+
+	if (! $is_preview && ! $is_edit_mode) {
+		return;
+	}
+
+	evolua_enqueue_post_author_meta_style();
+}
+add_action('wp_enqueue_scripts', 'evolua_enqueue_post_author_meta_style_in_elementor');
+add_action('elementor/frontend/after_enqueue_styles', 'evolua_enqueue_post_author_meta_style_in_elementor');
 
 function evolua_get_post_author_role($author_id, $meta_key, $default_role)
 {
