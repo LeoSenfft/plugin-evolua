@@ -100,6 +100,7 @@
   font-weight: 700;
   line-height: 1;
   text-decoration: none;
+  min-height: 28px;
 }
 
 .evolua-post-card__category .evolua-post-category-icon,
