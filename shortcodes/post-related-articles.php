@@ -19,27 +19,34 @@ function evolua_post_related_articles_shortcode($atts = [])
 
 	$post_id = (int) $post->ID;
 	$categories = get_the_category($post_id);
-
-	if (empty($categories)) {
-		return '';
-	}
-
-	$primary_category = $categories[0];
 	$posts_per_page = max(1, (int) $atts['posts_per_page']);
 
-	$related_query = new WP_Query([
+	$query_args = [
 		'post_type'           => 'post',
 		'post_status'         => 'publish',
 		'posts_per_page'      => $posts_per_page,
-		'cat'                 => (int) $primary_category->term_id,
 		'post__not_in'        => [$post_id],
 		'ignore_sticky_posts' => true,
-	]);
+	];
+
+	if (! empty($categories)) {
+		$query_args['cat'] = (int) $categories[0]->term_id;
+	}
+
+	$related_query = new WP_Query($query_args);
 
 	if (! $related_query->have_posts()) {
 		wp_reset_postdata();
 
-		return '';
+		unset($query_args['cat']);
+
+		$related_query = new WP_Query($query_args);
+
+		if (! $related_query->have_posts()) {
+			wp_reset_postdata();
+
+			return '';
+		}
 	}
 
 	evolua_enqueue_post_related_articles_styles();
