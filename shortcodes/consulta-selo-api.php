@@ -66,7 +66,7 @@ function evola_consulta_selo_api_ajax()
 			'message' => $result['message'],
 			'status_code' => $result['status_code'] ?? null,
 			'body' => $result['body'] ?? null,
-		], 502);
+		]);
 	}
 
 	wp_send_json_success([
@@ -154,9 +154,17 @@ function evola_consulta_selo_api_shortcode()
 					})
 					.then(function(response) {
 						if (!response || !response.success) {
-							const errorMessage = response && response.data && response.data.message ?
+							let errorMessage = response && response.data && response.data.message ?
 								response.data.message :
 								'Nao foi possivel realizar a consulta.';
+
+							if (response && response.data && response.data.status_code) {
+								errorMessage += ' Status da API: ' + response.data.status_code + '.';
+							}
+
+							if (response && response.data && response.data.body) {
+								errorMessage += ' Resposta: ' + response.data.body;
+							}
 
 							throw new Error(errorMessage);
 						}
