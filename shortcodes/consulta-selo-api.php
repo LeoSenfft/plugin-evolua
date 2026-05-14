@@ -147,12 +147,12 @@ function evola_consulta_selo_api_shortcode()
 			function updateCompanyData(data) {
 				if (!data) return;
 
-				setElementText('#status-empresa', data.status);
-				setElementText('#nome-empresa', data.name);
+				setElementText('#status-empresa .elementor-icon-box-description', data.status);
+				setElementText('#nome-empresa .elementor-heading-title', data.name);
 				setElementText('#data-empresa', formatDate(data.helpingSince));
-				setElementText('#co2', data.co2Reduction);
-				setElementText('#arvores', data.enviromentImpact);
-				setElementText('#kwh', data.cleanEnergy);
+				setElementText('#co2 .elementor-heading-title', data.co2Reduction);
+				setElementText('#arvores .elementor-heading-title', data.enviromentImpact);
+				setElementText('#kwh .elementor-heading-title', data.cleanEnergy);
 			}
 
 			form.addEventListener('submit', function(event) {
