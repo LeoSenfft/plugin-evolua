@@ -201,6 +201,7 @@ require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-categories.php';
 require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-category-icon.php';
 require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-breadcrumb.php';
 require_once EVOLUA_PLUGIN_PATH . 'shortcodes/post-author-meta.php';
+require_once EVOLUA_PLUGIN_PATH . 'shortcodes/consulta-selo-api.php';
 
 
 function faq_sanfona_shortcode()
