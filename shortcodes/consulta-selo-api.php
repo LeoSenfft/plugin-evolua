@@ -144,15 +144,23 @@ function evola_consulta_selo_api_shortcode()
 				return date.toLocaleDateString('pt-BR');
 			}
 
+			function formatNumber(value) {
+				const number = Number(value);
+
+				if (Number.isNaN(number)) return value;
+
+				return number.toLocaleString('pt-BR');
+			}
+
 			function updateCompanyData(data) {
 				if (!data) return;
 
 				setElementText('#status-empresa .elementor-icon-box-description', data.status);
 				setElementText('#nome-empresa .elementor-heading-title', data.name);
 				setElementText('#data-empresa', formatDate(data.helpingSince));
-				setElementText('#co2 .elementor-heading-title', data.co2Reduction);
-				setElementText('#arvores .elementor-heading-title', data.enviromentImpact);
-				setElementText('#kwh .elementor-heading-title', data.cleanEnergy);
+				setElementText('#co2 .elementor-heading-title', formatNumber(data.co2Reduction));
+				setElementText('#arvores .elementor-heading-title', formatNumber(data.enviromentImpact));
+				setElementText('#kwh .elementor-heading-title', formatNumber(data.cleanEnergy));
 			}
 
 			form.addEventListener('submit', function(event) {
