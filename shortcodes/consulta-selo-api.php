@@ -36,11 +36,13 @@ function evola_consulta_selo_api_request($consulta)
 
 	$status_code = wp_remote_retrieve_response_code($response);
 	$response_body = wp_remote_retrieve_body($response);
+	$response_data = json_decode($response_body, true);
 
 	return [
 		'success' => $status_code >= 200 && $status_code < 300,
 		'status_code' => $status_code,
 		'body' => $response_body,
+		'data' => is_array($response_data) ? $response_data : null,
 		'message' => $status_code >= 200 && $status_code < 300
 			? 'Consulta realizada com sucesso.'
 			: 'A API externa retornou um erro.',
@@ -73,6 +75,7 @@ function evola_consulta_selo_api_ajax()
 		'message' => $result['message'],
 		'status_code' => $result['status_code'],
 		'body' => $result['body'],
+		'data' => $result['data'],
 	]);
 }
 add_action('wp_ajax_evola_consulta_selo_api', 'evola_consulta_selo_api_ajax');
@@ -122,6 +125,36 @@ function evola_consulta_selo_api_shortcode()
 				message.dataset.type = type || '';
 			}
 
+			function setElementText(selector, value) {
+				const element = document.querySelector(selector);
+
+				if (!element || value === null || typeof value === 'undefined') return;
+
+				element.textContent = value;
+			}
+
+			function formatDate(value) {
+				if (!value) return value;
+
+				const normalizedValue = value.replace(' ', 'T');
+				const date = new Date(normalizedValue);
+
+				if (Number.isNaN(date.getTime())) return value;
+
+				return date.toLocaleDateString('pt-BR');
+			}
+
+			function updateCompanyData(data) {
+				if (!data) return;
+
+				setElementText('#status-empresa', data.status);
+				setElementText('#nome-empresa', data.name);
+				setElementText('#data-empresa', formatDate(data.helpingSince));
+				setElementText('#co2', data.co2Reduction);
+				setElementText('#arvores', data.enviromentImpact);
+				setElementText('#kwh', data.cleanEnergy);
+			}
+
 			form.addEventListener('submit', function(event) {
 				event.preventDefault();
 
@@ -169,6 +202,7 @@ function evola_consulta_selo_api_shortcode()
 							throw new Error(errorMessage);
 						}
 
+						updateCompanyData(response.data.data);
 						setMessage(response.data.message || 'Consulta realizada com sucesso.', 'success');
 					})
 					.catch(function(error) {
