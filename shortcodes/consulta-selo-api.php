@@ -6,28 +6,44 @@ if (! defined('ABSPATH')) {
 
 function evola_consulta_selo_api_request($consulta)
 {
-	$endpoint = 'https://api.exemplo.com/consulta-selo';
+	$cnpj = preg_replace('/\D+/', '', $consulta);
 
-	$body = [
-		'consulta' => $consulta,
-	];
+	if ($cnpj === '') {
+		return [
+			'success' => false,
+			'message' => 'Informe um CNPJ valido para consulta.',
+		];
+	}
 
-	$request_args = [
-		'method'  => 'POST',
+	$endpoint = add_query_arg([
+		'cnpj' => $cnpj,
+		'view' => 'aggregate',
+	], 'https://evolua--homolog.sandbox.my.salesforce-sites.com/services/apexrest/Ecology');
+
+	$response = wp_remote_get($endpoint, [
 		'timeout' => 15,
 		'headers' => [
-			'Content-Type' => 'application/json',
+			'Accept' => 'application/json',
 		],
-		'body'    => wp_json_encode($body),
-	];
+	]);
 
-	// Inicio da integracao externa. Quando o endpoint real existir, use:
-	// $response = wp_remote_post($endpoint, $request_args);
+	if (is_wp_error($response)) {
+		return [
+			'success' => false,
+			'message' => 'Erro ao conectar na API externa: ' . $response->get_error_message(),
+		];
+	}
+
+	$status_code = wp_remote_retrieve_response_code($response);
+	$response_body = wp_remote_retrieve_body($response);
 
 	return [
-		'endpoint' => $endpoint,
-		'request'  => $request_args,
-		'message'  => 'Integracao preparada para conectar na API externa.',
+		'success' => $status_code >= 200 && $status_code < 300,
+		'status_code' => $status_code,
+		'body' => $response_body,
+		'message' => $status_code >= 200 && $status_code < 300
+			? 'Consulta realizada com sucesso.'
+			: 'A API externa retornou um erro.',
 	];
 }
 
@@ -45,8 +61,18 @@ function evola_consulta_selo_api_ajax()
 
 	$result = evola_consulta_selo_api_request($consulta);
 
+	if (empty($result['success'])) {
+		wp_send_json_error([
+			'message' => $result['message'],
+			'status_code' => $result['status_code'] ?? null,
+			'body' => $result['body'] ?? null,
+		], 502);
+	}
+
 	wp_send_json_success([
 		'message' => $result['message'],
+		'status_code' => $result['status_code'],
+		'body' => $result['body'],
 	]);
 }
 add_action('wp_ajax_evola_consulta_selo_api', 'evola_consulta_selo_api_ajax');
@@ -62,7 +88,7 @@ function evola_consulta_selo_api_shortcode()
 ?>
 	<form id="<?php echo esc_attr($form_id); ?>" class="evola-consulta-selo-api-form">
 		<label for="<?php echo esc_attr($form_id); ?>-consulta">
-			Consulta
+			CNPJ
 		</label>
 
 		<input
@@ -135,7 +161,7 @@ function evola_consulta_selo_api_shortcode()
 							throw new Error(errorMessage);
 						}
 
-						setMessage(response.data.message || 'Consulta enviada com sucesso.', 'success');
+						setMessage(response.data.message || 'Consulta realizada com sucesso.', 'success');
 					})
 					.catch(function(error) {
 						setMessage(error.message || 'Nao foi possivel realizar a consulta.', 'error');
