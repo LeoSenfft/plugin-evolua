@@ -121,6 +121,8 @@ add_action('wp_ajax_nopriv_evola_consulta_selo_api', 'evola_consulta_selo_api_aj
 
 function evola_consulta_selo_api_shortcode()
 {
+	evolua_enqueue_consulta_selo_style();
+
 	$form_id = wp_unique_id('evola-consulta-selo-api-');
 	$nonce = wp_create_nonce('evola_consulta_selo_api');
 	$ajax_url = admin_url('admin-ajax.php');
