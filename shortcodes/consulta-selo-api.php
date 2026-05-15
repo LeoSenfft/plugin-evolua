@@ -182,7 +182,7 @@ function evola_consulta_selo_api_shortcode()
 					text: message,
 					duration: 5000,
 					close: true,
-					gravity: 'top',
+					gravity: 'bottom',
 					position: 'right',
 					stopOnFocus: true,
 					style: {
@@ -239,6 +239,7 @@ function evola_consulta_selo_api_shortcode()
 				}
 
 				if (resultSection) {
+					resultSection.classList.remove("hide")
 					resultSection.hidden = false;
 					resultSection.style.display = '';
 				}
