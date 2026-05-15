@@ -5,7 +5,7 @@ if (! defined('ABSPATH')) {
 }
 
 
-function evolua_enqueue_post_author_meta_style()
+function evolua_enqueue_consulta_selo_style()
 {
 	$css_file = EVOLUA_PLUGIN_PATH . 'assets/css/consulta-selo-api.css';
 	$css_url = EVOLUA_PLUGIN_URL . 'assets/css/consulta-selo-api.css';
@@ -21,6 +21,27 @@ function evolua_enqueue_post_author_meta_style()
 
 	wp_enqueue_style('evolua-consulta-selo-api');
 }
+
+function evolua_enqueue_consulta_selo_style_in_elementor()
+{
+	if (! class_exists('\Elementor\Plugin')) {
+		return;
+	}
+
+	$elementor = \Elementor\Plugin::$instance;
+	$is_preview = isset($elementor->preview) && $elementor->preview->is_preview_mode();
+	$is_edit_mode = isset($elementor->editor) && $elementor->editor->is_edit_mode();
+
+	if (! $is_preview && ! $is_edit_mode) {
+		return;
+	}
+
+	evolua_enqueue_consulta_selo_style();
+}
+add_action('wp_enqueue_scripts', 'evolua_enqueue_consulta_selo_style_in_elementor');
+add_action('elementor/frontend/after_enqueue_styles', 'evolua_enqueue_consulta_selo_style_in_elementor');
+
+
 function evola_consulta_selo_api_request($consulta)
 {
 	$cnpj = preg_replace('/\D+/', '', $consulta);
