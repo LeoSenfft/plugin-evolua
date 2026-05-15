@@ -148,7 +148,6 @@ function evola_consulta_selo_api_shortcode()
 			</button>
 		</div>
 
-		<div class="evola-consulta-selo-api-message" role="status" aria-live="polite"></div>
 	</form>
 
 	<script>
@@ -159,13 +158,27 @@ function evola_consulta_selo_api_shortcode()
 
 			const input = form.querySelector('[name="consulta"]');
 			const button = form.querySelector('button[type="submit"]');
-			const message = form.querySelector('.evola-consulta-selo-api-message');
 			const ajaxUrl = '<?php echo esc_js($ajax_url); ?>';
 			const nonce = '<?php echo esc_js($nonce); ?>';
 
-			function setMessage(text, type) {
-				message.textContent = text;
-				message.dataset.type = type || '';
+			function showErrorToast(text) {
+				const message = text || 'Nao foi possivel realizar a consulta.';
+
+				if (typeof Toastify !== 'function') {
+					return;
+				}
+
+				Toastify({
+					text: message,
+					duration: 5000,
+					close: true,
+					gravity: 'top',
+					position: 'right',
+					stopOnFocus: true,
+					style: {
+						background: '#d92d20',
+					},
+				}).showToast();
 			}
 
 			function setElementText(selector, value) {
@@ -212,7 +225,7 @@ function evola_consulta_selo_api_shortcode()
 				const consulta = input.value.trim();
 
 				if (!consulta) {
-					setMessage('Informe um valor para consulta.', 'error');
+					showErrorToast('Informe um valor para consulta.');
 					input.focus();
 					return;
 				}
@@ -223,7 +236,6 @@ function evola_consulta_selo_api_shortcode()
 				body.append('consulta', consulta);
 
 				button.disabled = true;
-				setMessage('Consultando...', 'loading');
 
 				fetch(ajaxUrl, {
 						method: 'POST',
@@ -238,26 +250,17 @@ function evola_consulta_selo_api_shortcode()
 					})
 					.then(function(response) {
 						if (!response || !response.success) {
-							let errorMessage = response && response.data && response.data.message ?
+							const errorMessage = response && response.data && response.data.message ?
 								response.data.message :
 								'Nao foi possivel realizar a consulta.';
-
-							if (response && response.data && response.data.status_code) {
-								errorMessage += ' Status da API: ' + response.data.status_code + '.';
-							}
-
-							if (response && response.data && response.data.body) {
-								errorMessage += ' Resposta: ' + response.data.body;
-							}
 
 							throw new Error(errorMessage);
 						}
 
 						updateCompanyData(response.data.data);
-						setMessage(response.data.message || 'Consulta realizada com sucesso.', 'success');
 					})
 					.catch(function(error) {
-						setMessage(error.message || 'Nao foi possivel realizar a consulta.', 'error');
+						showErrorToast(error.message || 'Nao foi possivel realizar a consulta.');
 					})
 					.finally(function() {
 						button.disabled = false;
