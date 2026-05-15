@@ -186,7 +186,7 @@ function evola_consulta_selo_api_shortcode()
 					position: 'right',
 					stopOnFocus: true,
 					style: {
-						background: '#d92d20',
+						background: '#f0483c',
 					},
 				}).showToast();
 			}
