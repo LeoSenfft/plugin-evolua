@@ -102,10 +102,15 @@ function evola_consulta_selo_api_ajax()
 	$result = evola_consulta_selo_api_request($consulta);
 
 	if (empty($result['success'])) {
+		$api_message = isset($result['data']['message']) && $result['data']['message'] !== null
+			? $result['data']['message']
+			: $result['message'];
+
 		wp_send_json_error([
-			'message' => $result['message'],
+			'message' => $api_message,
 			'status_code' => $result['status_code'] ?? null,
 			'body' => $result['body'] ?? null,
+			'data' => $result['data'] ?? null,
 		]);
 	}
 
@@ -278,7 +283,15 @@ function evola_consulta_selo_api_shortcode()
 							throw new Error(errorMessage);
 						}
 
-						updateCompanyData(response.data.data);
+						const apiData = response.data.data;
+						const apiMessage = apiData && apiData.message ? apiData.message : '';
+
+						if (apiMessage) {
+							showErrorToast(apiMessage);
+							return;
+						}
+
+						updateCompanyData(apiData);
 						showResultSection();
 					})
 					.catch(function(error) {
