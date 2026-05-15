@@ -16,6 +16,11 @@
 .evolua-consulta-selo-api-form .input-consulta {
 	border: none;
 	border-radius: 0;
+	height: 100%;
+}
+
+.evolua-consulta-selo-api-form .input-consulta:focus-visible {
+	outline: none;
 }
 
 .evolua-consulta-selo-api-form .btn-submit {
@@ -27,4 +32,8 @@
 	height: 100%;
 	border: none;
 	border-radius: 0;
+}
+
+.evolua-consulta-selo-api-form .btn-submit:hover {
+  background-color: var(--e-global-color-f7fc815);
 }
