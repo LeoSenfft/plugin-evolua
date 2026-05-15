@@ -141,8 +141,13 @@ function evola_consulta_selo_api_shortcode()
 				required>
 
 			<button class="btn-submit" type="submit">
-				<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<svg class="icon-search" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 					<path d="M17.9833 19.5L11.1583 12.675C10.6167 13.1083 9.99375 13.4514 9.28958 13.7042C8.58542 13.9569 7.83611 14.0833 7.04167 14.0833C5.07361 14.0833 3.40817 13.4016 2.04533 12.038C0.682501 10.6744 0.000722795 9.009 5.73192e-07 7.04167C-0.000721649 5.07433 0.681056 3.40889 2.04533 2.04533C3.40961 0.681778 5.07506 0 7.04167 0C9.00828 0 10.6741 0.681778 12.0391 2.04533C13.4041 3.40889 14.0855 5.07433 14.0833 7.04167C14.0833 7.83611 13.9569 8.58542 13.7042 9.28958C13.4514 9.99375 13.1083 10.6167 12.675 11.1583L19.5 17.9833L17.9833 19.5ZM7.04167 11.9167C8.39583 11.9167 9.54706 11.4429 10.4953 10.4953C11.4436 9.54778 11.9174 8.39656 11.9167 7.04167C11.9159 5.68678 11.4422 4.53592 10.4953 3.58908C9.5485 2.64225 8.39728 2.16811 7.04167 2.16667C5.68606 2.16522 4.5352 2.63936 3.58908 3.58908C2.64297 4.53881 2.16883 5.68967 2.16667 7.04167C2.1645 8.39367 2.63864 9.54489 3.58908 10.4953C4.53953 11.4458 5.69039 11.9196 7.04167 11.9167Z" fill="currentColor" />
+				</svg>
+
+				<svg class="icon-loading" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+					<circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="3" opacity="0.25" />
+					<path d="M18 10C18 5.58172 14.4183 2 10 2" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
 				</svg>
 
 			</button>
@@ -219,6 +224,21 @@ function evola_consulta_selo_api_shortcode()
 				setElementText('#kwh .elementor-heading-title', formatNumber(data.cleanEnergy));
 			}
 
+			function showResultSection() {
+				const searchSection = document.querySelector('#secao-consulta');
+				const resultSection = document.querySelector('#secao-resultado');
+
+				if (searchSection) {
+					searchSection.hidden = true;
+					searchSection.style.display = 'none';
+				}
+
+				if (resultSection) {
+					resultSection.hidden = false;
+					resultSection.style.display = '';
+				}
+			}
+
 			form.addEventListener('submit', function(event) {
 				event.preventDefault();
 
@@ -236,6 +256,7 @@ function evola_consulta_selo_api_shortcode()
 				body.append('consulta', consulta);
 
 				button.disabled = true;
+				button.classList.add('is-loading');
 
 				fetch(ajaxUrl, {
 						method: 'POST',
@@ -258,12 +279,14 @@ function evola_consulta_selo_api_shortcode()
 						}
 
 						updateCompanyData(response.data.data);
+						showResultSection();
 					})
 					.catch(function(error) {
 						showErrorToast(error.message || 'Nao foi possivel realizar a consulta.');
 					})
 					.finally(function() {
 						button.disabled = false;
+						button.classList.remove('is-loading');
 					});
 			});
 		})();
