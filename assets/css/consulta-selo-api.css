@@ -1,18 +1,20 @@
-.evola-consulta-selo-api-form {
-	.btn-submit {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
+.evolua-consulta-selo-api-form {
+  .btn-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-	.input-box {
-		border-radius: 8px;
-		padding: 7px 16px;
-	}
+  .input-box {
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    padding: 7px 16px;
+  }
 
-	.btn-submit {
-		padding: 16px;
-		background-color: var( --e-global-color-f7fc815 );
-		color: #fff;
-	}
+  .btn-submit {
+    padding: 16px;
+    background-color: var(--e-global-color-f7fc815);
+    color: #fff;
+  }
 }

@@ -127,7 +127,7 @@ function evola_consulta_selo_api_shortcode()
 
 	ob_start();
 ?>
-	<form id="<?php echo esc_attr($form_id); ?>" class="evola-consulta-selo-api-form">
+	<form id="<?php echo esc_attr($form_id); ?>" class="evolua-consulta-selo-api-form">
 		<div class="input-box">
 
 			<input
