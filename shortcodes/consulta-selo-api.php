@@ -55,11 +55,11 @@ function evola_consulta_selo_api_request($consulta)
 
 	$endpoint = add_query_arg([
 		'cnpj' => $cnpj,
-		'view' => 'aggregate',
-	], 'https://evolua--homolog.sandbox.my.salesforce-sites.com/services/apexrest/Ecology');
+	], 'https://api-portalcliente-hml.evoluaenergia.com.br/api/Sustainability');
 
 	$response = wp_remote_get($endpoint, [
 		'timeout' => 15,
+		'sslverify' => false,
 		'headers' => [
 			'Accept' => 'application/json',
 		],
@@ -121,8 +121,8 @@ function evola_consulta_selo_api_ajax()
 		'data' => $result['data'],
 	]);
 }
-add_action('wp_ajax_evola_consulta_selo_api', 'evola_consulta_selo_api_ajax');
-add_action('wp_ajax_nopriv_evola_consulta_selo_api', 'evola_consulta_selo_api_ajax');
+// add_action('wp_ajax_evola_consulta_selo_api', 'evola_consulta_selo_api_ajax');
+// add_action('wp_ajax_nopriv_evola_consulta_selo_api', 'evola_consulta_selo_api_ajax');
 
 function evola_consulta_selo_api_shortcode()
 {
@@ -264,28 +264,52 @@ function evola_consulta_selo_api_shortcode()
 				button.disabled = true;
 				button.classList.add('is-loading');
 
-				fetch(ajaxUrl, {
-						method: 'POST',
-						credentials: 'same-origin',
-						headers: {
-							'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-						},
-						body: body.toString(),
-					})
-					.then(function(response) {
-						return response.json();
-					})
-					.then(function(response) {
-						if (!response || !response.success) {
-							const errorMessage = response && response.data && response.data.message ?
-								response.data.message :
-								'Nao foi possivel realizar a consulta.';
+				const endpoint =
+					'https://api-portalcliente.evoluaenergia.com.br/api/Sustainability?' +
+					new URLSearchParams({
+						cnpj: consulta.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
+					}).toString();
 
-							throw new Error(errorMessage);
+				fetch(endpoint, {
+						method: 'GET',
+						headers: {
+							Accept: 'application/json',
+						},
+					})
+					.then(async function(response) {
+						console.log('STATUS', response.status);
+
+						const text = await response.text();
+
+						console.log('RAW RESPONSE', text);
+
+						if (!response.ok) {
+							throw new Error('Nenhum CNPJ encontrado.');
 						}
 
-						const apiData = response.data.data;
-						const apiMessage = apiData && apiData.message ? apiData.message : '';
+						if (!text) {
+							throw new Error('API retornou resposta vazia.');
+						}
+
+						try {
+							return JSON.parse(text);
+						} catch (e) {
+							console.error('JSON INVALIDO', e);
+							throw new Error('Resposta da API não é um JSON válido.');
+						}
+					})
+					// 					.then(function(response) {
+					// 			if (!response.ok) {
+					// 				throw new Error('Erro ao consultar API.');
+					// 			}
+
+					// 			return response.json();
+					// 		})
+					.then(function(apiData) {
+						const apiMessage =
+							apiData && apiData.message ?
+							apiData.message :
+							'';
 
 						if (apiMessage) {
 							showErrorToast(apiMessage);
@@ -296,7 +320,12 @@ function evola_consulta_selo_api_shortcode()
 						showResultSection();
 					})
 					.catch(function(error) {
-						showErrorToast(error.message || 'Nao foi possivel realizar a consulta.');
+						console.error(error);
+
+						showErrorToast(
+							error.message ||
+							'Nao foi possivel realizar a consulta.'
+						);
 					})
 					.finally(function() {
 						button.disabled = false;
