@@ -493,172 +493,187 @@ function my_cptui_add_post_type_to_search($query)
 }
 add_filter('pre_get_posts', 'my_cptui_add_post_type_to_search');
 
-function custom_post_toc_shortcode() {
-    global $post;
+// Template próprio (página limpa) para a single do CPT "relatorio"
+function evolua_relatorio_single_template($template)
+{
+	if (is_singular('relatorio')) {
+		$plugin_template = EVOLUA_PLUGIN_PATH . 'templates/single-relatorio.php';
+		if (file_exists($plugin_template)) {
+			return $plugin_template;
+		}
+	}
+	return $template;
+}
+add_filter('single_template', 'evolua_relatorio_single_template');
 
-    if (!$post) {
-        return '';
-    }
+function custom_post_toc_shortcode()
+{
+	global $post;
 
-    $content = $post->post_content;
+	if (!$post) {
+		return '';
+	}
 
-    if (empty($content)) {
-        return '';
-    }
+	$content = $post->post_content;
 
-    libxml_use_internal_errors(true);
+	if (empty($content)) {
+		return '';
+	}
 
-    $dom = new DOMDocument();
-    $dom->loadHTML(
-        mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8')
-    );
+	libxml_use_internal_errors(true);
 
-    $xpath = new DOMXPath($dom);
+	$dom = new DOMDocument();
+	$dom->loadHTML(
+		mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8')
+	);
 
-    // Busca H2 e H3
-    $headings = $xpath->query('//h2 | //h3');
+	$xpath = new DOMXPath($dom);
 
-    if (!$headings->length) {
-        return '';
-    }
+	// Busca H2 e H3
+	$headings = $xpath->query('//h2 | //h3');
 
-    $toc = [];
-    $used_ids = [];
+	if (!$headings->length) {
+		return '';
+	}
 
-    foreach ($headings as $heading) {
-        $text = trim($heading->textContent);
+	$toc = [];
+	$used_ids = [];
 
-        if (empty($text)) {
-            continue;
-        }
+	foreach ($headings as $heading) {
+		$text = trim($heading->textContent);
 
-        // Verifica se já existe ID
-        $id = $heading->getAttribute('id');
+		if (empty($text)) {
+			continue;
+		}
 
-        // Se não existir, cria automaticamente
-        if (empty($id)) {
-            $id = sanitize_title($text);
+		// Verifica se já existe ID
+		$id = $heading->getAttribute('id');
 
-            // Evita IDs duplicados
-            $original_id = $id;
-            $counter = 2;
+		// Se não existir, cria automaticamente
+		if (empty($id)) {
+			$id = sanitize_title($text);
 
-            while (in_array($id, $used_ids)) {
-                $id = $original_id . '-' . $counter;
-                $counter++;
-            }
+			// Evita IDs duplicados
+			$original_id = $id;
+			$counter = 2;
 
-            $heading->setAttribute('id', $id);
-        }
+			while (in_array($id, $used_ids)) {
+				$id = $original_id . '-' . $counter;
+				$counter++;
+			}
 
-        $used_ids[] = $id;
+			$heading->setAttribute('id', $id);
+		}
 
-        $toc[] = [
-            'title' => $text,
-            'id' => $id,
-            'tag' => $heading->tagName,
-        ];
-    }
+		$used_ids[] = $id;
 
-    // Atualiza o conteúdo do post com os IDs adicionados
-    $body = $dom->getElementsByTagName('body')->item(0);
+		$toc[] = [
+			'title' => $text,
+			'id' => $id,
+			'tag' => $heading->tagName,
+		];
+	}
 
-    $updated_content = '';
+	// Atualiza o conteúdo do post com os IDs adicionados
+	$body = $dom->getElementsByTagName('body')->item(0);
 
-    foreach ($body->childNodes as $child) {
-        $updated_content .= $dom->saveHTML($child);
-    }
+	$updated_content = '';
 
-    // Atualiza conteúdo globalmente para refletir os IDs
-    add_filter('the_content', function() use ($updated_content) {
-        return $updated_content;
-    }, 999);
+	foreach ($body->childNodes as $child) {
+		$updated_content .= $dom->saveHTML($child);
+	}
 
-    // Monta HTML da TOC
-    ob_start();
+	// Atualiza conteúdo globalmente para refletir os IDs
+	add_filter('the_content', function () use ($updated_content) {
+		return $updated_content;
+	}, 999);
 
-    echo '<div class="post-toc">';
-    echo '<ul>';
+	// Monta HTML da TOC
+	ob_start();
 
-    foreach ($toc as $item) {
-        $class = $item['tag'] === 'h3' ? 'toc-h3' : 'toc-h2';
+	echo '<div class="post-toc">';
+	echo '<ul>';
 
-        echo '<li class="' . esc_attr($class) . '">';
-        echo '<a href="#' . esc_attr($item['id']) . '">';
-        echo esc_html($item['title']);
-        echo '</a>';
-        echo '</li>';
-    }
+	foreach ($toc as $item) {
+		$class = $item['tag'] === 'h3' ? 'toc-h3' : 'toc-h2';
 
-    echo '</ul>';
-    echo '</div>';
+		echo '<li class="' . esc_attr($class) . '">';
+		echo '<a href="#' . esc_attr($item['id']) . '">';
+		echo esc_html($item['title']);
+		echo '</a>';
+		echo '</li>';
+	}
 
-    return ob_get_clean();
+	echo '</ul>';
+	echo '</div>';
+
+	return ob_get_clean();
 }
 
 add_shortcode('post_toc', 'custom_post_toc_shortcode');
 
-function custom_post_content_with_ids_shortcode() {
-    global $post;
+function custom_post_content_with_ids_shortcode()
+{
+	global $post;
 
-    if (!$post) {
-        return '';
-    }
+	if (!$post) {
+		return '';
+	}
 
-    $content = apply_filters('the_content', $post->post_content);
+	$content = apply_filters('the_content', $post->post_content);
 
-    if (empty($content)) {
-        return '';
-    }
+	if (empty($content)) {
+		return '';
+	}
 
-    libxml_use_internal_errors(true);
+	libxml_use_internal_errors(true);
 
-    $dom = new DOMDocument();
+	$dom = new DOMDocument();
 
-    $dom->loadHTML(
-        mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8'),
-        LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
-    );
+	$dom->loadHTML(
+		mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8'),
+		LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+	);
 
-    $xpath = new DOMXPath($dom);
+	$xpath = new DOMXPath($dom);
 
-    // Busca H2 e H3
-    $headings = $xpath->query('//h2 | //h3');
+	// Busca H2 e H3
+	$headings = $xpath->query('//h2 | //h3');
 
-    $used_ids = [];
+	$used_ids = [];
 
-    foreach ($headings as $heading) {
-        $text = trim($heading->textContent);
+	foreach ($headings as $heading) {
+		$text = trim($heading->textContent);
 
-        if (empty($text)) {
-            continue;
-        }
+		if (empty($text)) {
+			continue;
+		}
 
-        $id = $heading->getAttribute('id');
+		$id = $heading->getAttribute('id');
 
-        // Cria ID automaticamente se não existir
-        if (empty($id)) {
-            $id = sanitize_title($text);
+		// Cria ID automaticamente se não existir
+		if (empty($id)) {
+			$id = sanitize_title($text);
 
-            // Evita IDs duplicados
-            $original_id = $id;
-            $counter = 2;
+			// Evita IDs duplicados
+			$original_id = $id;
+			$counter = 2;
 
-            while (in_array($id, $used_ids)) {
-                $id = $original_id . '-' . $counter;
-                $counter++;
-            }
+			while (in_array($id, $used_ids)) {
+				$id = $original_id . '-' . $counter;
+				$counter++;
+			}
 
-            $heading->setAttribute('id', $id);
-        }
+			$heading->setAttribute('id', $id);
+		}
 
-        $used_ids[] = $id;
-    }
+		$used_ids[] = $id;
+	}
 
-    return $dom->saveHTML();
+	return $dom->saveHTML();
 }
 
 add_shortcode(
-    'post_content_with_ids',
-    'custom_post_content_with_ids_shortcode'
+	'post_content_with_ids',
+	'custom_post_content_with_ids_shortcode'
 );
