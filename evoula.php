@@ -493,18 +493,18 @@ function my_cptui_add_post_type_to_search($query)
 }
 add_filter('pre_get_posts', 'my_cptui_add_post_type_to_search');
 
-// Template próprio (página limpa) para a single do CPT "relatorio"
-function evolua_relatorio_single_template($template)
+// Template próprio (página limpa) para a single do CPT "comite"
+function evolua_comite_single_template($template)
 {
-	if (is_singular('relatorio')) {
-		$plugin_template = EVOLUA_PLUGIN_PATH . 'templates/single-relatorio.php';
+	if (is_singular('comite')) {
+		$plugin_template = EVOLUA_PLUGIN_PATH . 'templates/single-comite.php';
 		if (file_exists($plugin_template)) {
 			return $plugin_template;
 		}
 	}
 	return $template;
 }
-add_filter('single_template', 'evolua_relatorio_single_template');
+add_filter('single_template', 'evolua_comite_single_template');
 
 function custom_post_toc_shortcode()
 {
