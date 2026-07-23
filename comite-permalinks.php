@@ -28,7 +28,7 @@ if (! defined('EVOLUA_COMITE_TAX')) {
  * atribuído) seguido do caminho hierárquico do post. Para rascunho/preview, mantém
  * o link padrão do WordPress para não quebrar a pré-visualização.
  */
-add_filter('post_type_link', function ($permalink, $post) {
+add_filter('post_type_link', function ($permalink, $post, $leavename) {
 	if ($post->post_type !== EVOLUA_COMITE_CPT) {
 		return $permalink;
 	}
@@ -37,8 +37,10 @@ add_filter('post_type_link', function ($permalink, $post) {
 		return $permalink;
 	}
 
-	// Caminho hierárquico completo do post (pai/filho).
-	$post_uri = get_page_uri($post);
+	// Parte do post: quando $leavename é true (tela de edição / "sample permalink"),
+	// mantém o token %comite% para o WordPress renderizar o campo de slug editável;
+	// caso contrário usa o caminho hierárquico real do post (pai/filho).
+	$post_uri = $leavename ? '%' . $post->post_type . '%' : get_page_uri($post);
 
 	// Caminho completo do PRIMEIRO termo (ancestrais + termo).
 	$term_path = '';
@@ -63,7 +65,23 @@ add_filter('post_type_link', function ($permalink, $post) {
 	$path = EVOLUA_COMITE_CPT . '/' . ($term_path ? $term_path . '/' : '') . $post_uri;
 
 	return home_url(user_trailingslashit($path));
-}, 10, 2);
+}, 10, 3);
+
+/**
+ * Permite slugs duplicados no CPT comite (ex.: dois posts "comercial", um em /junho/ e
+ * outro em /julho/). O WordPress normalmente força unicidade entre irmãos, gerando
+ * "comercial-2"; aqui devolvemos o slug original e deixamos a taxonomia diferenciar a URL.
+ * O resolvedor usa o termo para escolher o post certo.
+ *
+ * Atenção: se dois comites tiverem o MESMO termo E o mesmo slug, a URL fica ambígua.
+ */
+add_filter('wp_unique_post_slug', function ($slug, $post_ID, $post_status, $post_type, $post_parent, $original_slug) {
+	if ($post_type !== EVOLUA_COMITE_CPT || $original_slug === '') {
+		return $slug;
+	}
+
+	return $original_slug;
+}, 10, 6);
 
 /**
  * Registra a query var auxiliar usada pelo resolvedor.
@@ -122,9 +140,44 @@ function evolua_comite_valid_term_path(array $slugs)
 }
 
 /**
+ * Encontra o post comite correspondente a um caminho hierárquico, desambiguando por termo.
+ *
+ * Como slugs duplicados são permitidos (diferenciados pela taxonomia), pode haver mais de
+ * um post com o mesmo slug. Busca todos os candidatos com o slug folha, confere o caminho
+ * hierárquico completo e, se houver termo na URL, exige que o post tenha esse termo.
+ */
+function evolua_comite_resolve_post($post_path, $term)
+{
+	$segments  = explode('/', $post_path);
+	$leaf_slug = end($segments);
+
+	$candidates = get_posts([
+		'post_type'        => EVOLUA_COMITE_CPT,
+		'name'             => $leaf_slug,
+		'post_status'      => ['publish', 'private', 'future'],
+		'posts_per_page'   => -1,
+		'suppress_filters' => true,
+	]);
+
+	foreach ($candidates as $cand) {
+		if (get_page_uri($cand) !== $post_path) {
+			continue;
+		}
+
+		if ($term && ! has_term($term->term_id, EVOLUA_COMITE_TAX, $cand)) {
+			continue;
+		}
+
+		return $cand;
+	}
+
+	return null;
+}
+
+/**
  * Resolvedor determinístico: testa cada ponto de corte entre caminho de termo (prefixo)
  * e caminho do post (sufixo). Aceita o corte em que o prefixo valida como caminho de termo
- * (ou é vazio) E o sufixo é um post comite existente.
+ * (ou é vazio) E o sufixo é um post comite existente que possui aquele termo.
  */
 add_action('parse_request', function ($wp) {
 	if (empty($wp->query_vars['comite_full_path'])) {
@@ -147,7 +200,18 @@ add_action('parse_request', function ($wp) {
 			continue;
 		}
 
-		$post = get_page_by_path($post_path, OBJECT, EVOLUA_COMITE_CPT);
+		// Termo folha do prefixo (usado para desambiguar slugs duplicados).
+		$term = null;
+
+		if (! empty($term_slugs)) {
+			$term = get_term_by('slug', end($term_slugs), EVOLUA_COMITE_TAX);
+
+			if (! $term || is_wp_error($term)) {
+				continue;
+			}
+		}
+
+		$post = evolua_comite_resolve_post($post_path, $term);
 
 		if ($post) {
 			$resolved = $post;
