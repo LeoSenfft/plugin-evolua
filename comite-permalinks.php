@@ -184,7 +184,6 @@ add_action('parse_request', function ($wp) {
 		return;
 	}
 
-	$page     = isset($wp->query_vars['page']) ? $wp->query_vars['page'] : '';
 	$segments = explode('/', trim($wp->query_vars['comite_full_path'], '/'));
 
 	$resolved = null;
@@ -219,16 +218,15 @@ add_action('parse_request', function ($wp) {
 		}
 	}
 
-	if ($resolved) {
-		$wp->query_vars = ['post_type' => EVOLUA_COMITE_CPT, 'p' => $resolved->ID];
-
-		if ($page !== '') {
-			$wp->query_vars['page'] = $page;
-		}
-	}
-
-	// Se nada resolver, remove o helper e deixa o WordPress seguir (404 natural).
+	// Remove só o helper, sem recriar o array, para preservar query vars importantes
+	// como preview, preview_id/nonce e page (necessárias para a pré-visualização e a
+	// paginação de post único funcionarem).
 	unset($wp->query_vars['comite_full_path']);
+
+	if ($resolved) {
+		$wp->query_vars['post_type'] = EVOLUA_COMITE_CPT;
+		$wp->query_vars['p']         = $resolved->ID;
+	}
 });
 
 /**
