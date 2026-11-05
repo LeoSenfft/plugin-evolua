@@ -245,11 +245,7 @@ function evola_consulta_selo_api_shortcode()
 				}
 			}
 
-			form.addEventListener('submit', function(event) {
-				event.preventDefault();
-
-				const consulta = input.value.trim();
-
+			function consultarSelo(consulta) {
 				if (!consulta) {
 					showErrorToast('Informe um valor para consulta.');
 					input.focus();
@@ -331,7 +327,100 @@ function evola_consulta_selo_api_shortcode()
 						button.disabled = false;
 						button.classList.remove('is-loading');
 					});
+			}
+
+			form.addEventListener('submit', function(event) {
+				event.preventDefault();
+
+				consultarSelo(input.value.trim());
 			});
+
+			function normalizeCnpj(value) {
+				return value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+			}
+
+			function cnpjCheckDigit(value, weights) {
+				const sum = value.split('').reduce(function(total, char, index) {
+					return total + (char.charCodeAt(0) - 48) * weights[index];
+				}, 0);
+				const rest = sum % 11;
+
+				return rest < 2 ? 0 : 11 - rest;
+			}
+
+			function isValidCnpj(cnpj) {
+				if (!/^[A-Z0-9]{12}[0-9]{2}$/.test(cnpj)) return false;
+
+				const base = cnpj.slice(0, 12);
+				const firstDigit = cnpjCheckDigit(base, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+				const secondDigit = cnpjCheckDigit(base + firstDigit, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+
+				return cnpj.slice(12) === String(firstDigit) + String(secondDigit);
+			}
+
+			function formatCnpj(cnpj) {
+				if (cnpj.length !== 14) return cnpj;
+
+				return cnpj.slice(0, 2) + '.' + cnpj.slice(2, 5) + '.' + cnpj.slice(5, 8) + '/' + cnpj.slice(8, 12) + '-' + cnpj.slice(12);
+			}
+
+			function showInvalidCnpj() {
+				const error = document.getElementById('input-error');
+
+				if (!error) {
+					showErrorToast('CNPJ inválido!');
+					return;
+				}
+
+				error.hidden = false;
+
+				if (window.jQuery) {
+					window.jQuery(error).show();
+				} else {
+					error.style.display = 'block';
+				}
+			}
+
+			function consultarPelaUrl() {
+				const cnpjDaUrl = new URLSearchParams(window.location.search).get('cnpj');
+
+				if (!cnpjDaUrl) return;
+
+				const cnpj = normalizeCnpj(cnpjDaUrl);
+
+				input.value = formatCnpj(cnpj);
+				input.dispatchEvent(new Event('input', {
+					bubbles: true
+				}));
+
+				if (!isValidCnpj(cnpj)) {
+					showInvalidCnpj();
+					return;
+				}
+
+				consultarSelo(cnpj);
+			}
+
+			function depoisDaPaginaPronta(callback) {
+				function agendar() {
+					if (window.jQuery) {
+						window.jQuery(function() {
+							setTimeout(callback, 0);
+						});
+						return;
+					}
+
+					setTimeout(callback, 0);
+				}
+
+				if (document.readyState === 'complete') {
+					agendar();
+				} else {
+					window.addEventListener('load', agendar);
+				}
+			}
+
+			depoisDaPaginaPronta(consultarPelaUrl);
 		})();
 	</script>
 <?php
